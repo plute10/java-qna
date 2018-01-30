@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import codesquad.domain.DeleteHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -41,24 +40,16 @@ public class QnaService {
         return questionRepository.findOne(id);
     }
 
+    @Transactional
     public Question update(User loginUser, long id, Question updatedQuestion) throws IllegalAccessException {
         Question question = findById(id);
-        if (loginUser.isWriterOf(question)){
-            question.updateTitleAndContents(updatedQuestion);
-            return questionRepository.save(question);
-        }
-        throw new IllegalAccessException("작성자만 수정할 수 있습니다.");
+        return question.update(loginUser, updatedQuestion);
     }
 
     @Transactional
     public boolean deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
         Question question = questionRepository.findOne(questionId);
-        if (loginUser.isWriterOf(question)) {
-            questionRepository.delete(questionId);
-            return true;
-        }
-
-        throw new CannotDeleteException("작성자만 삭제할 수 있습니다.");
+        return question.delete(loginUser, question);
     }
 
     public Iterable<Question> findAll() {

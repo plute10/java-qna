@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -31,7 +32,6 @@ public class QuestionController {
     public String create(@LoginUser User loginUser, QuestionDto questionDto, Model model) {
         Question question = new Question(questionDto.getTitle(), questionDto.getContents());
         model.addAttribute("question", questionService.create(loginUser, question));
-
         return "/qna/show";
     }
 
@@ -40,11 +40,10 @@ public class QuestionController {
         return "/qna/updateForm";
     }
 
-    @PostMapping("/{questionId}/update")
+    @PutMapping("/{questionId}")
     public String update(@LoginUser User loginUser, @PathVariable Long questionId, QuestionDto questionDto, Model model) throws IllegalAccessException {
         Question question = new Question(questionDto.getTitle(), questionDto.getContents());
         model.addAttribute("question", questionService.update(loginUser, questionId, question));
-
         return "/qna/show";
     }
 

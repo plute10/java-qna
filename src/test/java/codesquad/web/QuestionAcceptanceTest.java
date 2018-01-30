@@ -67,8 +67,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
                                                                                .addParameter("contents", "day")
                                                                                .build();
 
-        ResponseEntity<String> response = basicAuthTemplate().postForEntity("/questions/" + 2 + "/update", request, String.class);
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        basicAuthTemplate().put("/questions/" + 2 , request, String.class);
         System.out.println(questionRepository.findAll());
         assertThat(questionRepository.findOne(2L).getContents(), is("day"));
     }
@@ -82,6 +81,6 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void delete() {
         basicAuthTemplate().delete("/questions/" + QUESTION_ID);
-        assertThat(questionRepository.findOne(QUESTION_ID)).isNull();
+        assertThat(questionRepository.findOne(QUESTION_ID).isDeleted()).isTrue();
     }
 }
