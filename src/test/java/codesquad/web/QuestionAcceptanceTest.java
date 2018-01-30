@@ -63,11 +63,12 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void update() throws Exception {
         HttpEntity<MultiValueMap<String, Object>> request = htmlFormDataBuilder.urlEncodedForm()
+                                                                               .addParameter("_method", "put")
                                                                                .addParameter("title", "good")
                                                                                .addParameter("contents", "day")
                                                                                .build();
 
-        basicAuthTemplate().put("/questions/" + 2 , request, String.class);
+        basicAuthTemplate().postForEntity("/questions/" + 2 , request, String.class);
         System.out.println(questionRepository.findAll());
         assertThat(questionRepository.findOne(2L).getContents(), is("day"));
     }
