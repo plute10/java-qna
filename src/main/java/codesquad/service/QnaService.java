@@ -40,6 +40,10 @@ public class QnaService {
         return questionRepository.findOne(id);
     }
 
+    public Answer findAnswerById(long id) {
+        return answerRepository.findOne(id);
+    }
+
     @Transactional
     public Question update(User loginUser, long id, Question updatedQuestion) throws IllegalAccessException {
         Question question = findById(id);
@@ -60,12 +64,23 @@ public class QnaService {
         return questionRepository.findAll(pageable).getContent();
     }
 
+    @Transactional
     public Answer addAnswer(User loginUser, long questionId, String contents) {
-        return null;
+        Answer answer = new Answer(loginUser, contents);
+        Question question = findById(questionId);
+        question.addAnswer(answer);
+        return answerRepository.save(answer);
     }
 
-    public Answer deleteAnswer(User loginUser, long id) {
-        // TODO 답변 삭제 기능 구현 
-        return null;
+    @Transactional
+    public boolean deleteAnswer(User loginUser, long id) throws IllegalAccessException {
+        Answer answer = findAnswerById(id);
+        return answer.delete(loginUser);
+    }
+
+    @Transactional
+    public Answer updateAnswer(User loginUser, Long answerId, String contents) throws IllegalAccessException {
+        Answer answer = findAnswerById(answerId);
+        return answer.update(contents, loginUser);
     }
 }
