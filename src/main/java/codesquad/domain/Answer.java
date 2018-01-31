@@ -67,19 +67,19 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
     }
 
     public Answer update(String contents, User loginUser) throws IllegalAccessException {
-        if (isOwner(loginUser)) {
-            this.contents = contents;
-            return this;
+        if (!isOwner(loginUser)) {
+            throw new IllegalAccessException("작성자만 수정이 가능합니다.");
         }
-        throw new IllegalAccessException("작성자만 수정이 가능합니다.");
+        this.contents = contents;
+        return this;
     }
 
     public boolean delete(User loginUser) throws IllegalAccessException {
-        if (this.isOwner(loginUser)) {
-            this.deleted = true;
-            return this.deleted;
+        if (!isOwner(loginUser)) {
+            throw new IllegalAccessException("작성자만 삭제가 가능합니다.");
         }
-        throw new IllegalAccessException("작성자만 삭제가 가능합니다.");
+        this.deleted = true;
+        return this.deleted;
     }
 
     @Override
