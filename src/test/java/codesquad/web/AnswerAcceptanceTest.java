@@ -56,4 +56,10 @@ public class AnswerAcceptanceTest extends AcceptanceTest {
         basicAuthTemplate().delete("/questions/"+ question.getId() + "/answers/1");
         assertThat(answerRepository.findOne(1L).isDeleted(), is(true));
     }
+
+    @Test
+    public void delete_NotMyAnswer() {
+        basicAuthTemplate(secondDefaultUser()).delete("/questions/"+ question.getId() + "/answers/1");
+        assertThat(answerRepository.findOne(1L).isDeleted(), is(false));
+    }
 }

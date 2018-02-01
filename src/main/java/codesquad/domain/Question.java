@@ -1,5 +1,6 @@
 package codesquad.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +95,7 @@ public class Question extends AbstractEntity implements UrlGeneratable {
     }
 
     public Question update(User loginUser, Question updatedQuestion) throws IllegalAccessException {
-        if (!loginUser.isWriterOf(this)){
+        if (!loginUser.isWriterOf(this)) {
             throw new IllegalAccessException("작성자만 수정할 수 있습니다.");
         }
         this.title = updatedQuestion.title;
@@ -102,10 +103,50 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         return this;
     }
 
-    public boolean delete(User loginUser, Question question) {
-        if (loginUser.isWriterOf(question)) {
-            deleted = true;
+    public List<DeleteHistory> delete(User loginUser, Question question) throws CannotDeleteException {
+        List<DeleteHistory> histories = new ArrayList();
+        if (!validateDeleteQuestion(loginUser, question)) {
+            throw new CannotDeleteException("지울 수 없는 질문입니다.");
         }
-        return deleted;
+        histories.add(deleteAndMakeHistory(loginUser));
+        histories.addAll(deleteAllAnswer(loginUser));
+        return histories;
+    }
+
+    private DeleteHistory deleteAndMakeHistory(User loginUser) {
+        deleted = true;
+        return new DeleteHistory(ContentType.QUESTION, getId(), loginUser, getCreateDate());
+    }
+
+    private List<DeleteHistory> deleteAllAnswer(User loginUser) throws CannotDeleteException {
+        List<DeleteHistory> histories = new ArrayList();
+        if (answers.isEmpty()) {
+            return histories;
+        }
+        for (Answer answer : answers) {
+            histories.add(answer.delete(loginUser));
+        }
+        return histories;
+    }
+
+    private boolean validateDeleteQuestion(User loginUser, Question question) {
+        boolean valid = false;
+        if (!loginUser.isWriterOf(question)) {
+            return false;
+        }
+        if (answers.isEmpty()) {
+            valid = true;
+        }
+        if (!answers.isEmpty()) {
+            valid = hasOnlyOwnAnswer(loginUser);
+        }
+        return valid;
+    }
+
+    private boolean hasOnlyOwnAnswer(User loginUser) {
+        Long cnt = answers.stream()
+                          .filter(answer -> !answer.isOwner(loginUser))
+                          .count();
+        return cnt == 0;
     }
 }
