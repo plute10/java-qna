@@ -81,8 +81,8 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void delete() {
-        basicAuthTemplate().delete("/questions/" + QUESTION_ID);
-        assertThat(questionRepository.findOne(QUESTION_ID).isDeleted()).isTrue();
+        basicAuthTemplate().delete("/questions/" + 2);
+        assertThat(questionRepository.findOne(2L).isDeleted()).isTrue();
     }
 
     @Test

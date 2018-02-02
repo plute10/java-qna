@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
@@ -36,19 +37,19 @@ public class Question extends AbstractEntity implements UrlGeneratable {
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_question_writer"))
     private User writer;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    @Where(clause = "deleted = false")
-    @OrderBy("id ASC")
-    private List<Answer> answers = new ArrayList<>();
+    @Embedded
+    private Answers answers;
 
     private boolean deleted = false;
 
     public Question() {
+        answers = new Answers();
     }
 
     public Question(String title, String contents) {
         this.title = title;
         this.contents = contents;
+        this.answers = new Answers();
     }
 
     public String getTitle() {
@@ -120,12 +121,7 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 
     private List<DeleteHistory> deleteAllAnswer(User loginUser) throws CannotDeleteException {
         List<DeleteHistory> histories = new ArrayList();
-        if (answers.isEmpty()) {
-            return histories;
-        }
-        for (Answer answer : answers) {
-            histories.add(answer.delete(loginUser));
-        }
+        histories = answers.delete(histories, loginUser);
         return histories;
     }
 
@@ -134,19 +130,7 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         if (!loginUser.isWriterOf(question)) {
             return false;
         }
-        if (answers.isEmpty()) {
-            valid = true;
-        }
-        if (!answers.isEmpty()) {
-            valid = hasOnlyOwnAnswer(loginUser);
-        }
+        valid = answers.validate(valid, loginUser);
         return valid;
-    }
-
-    private boolean hasOnlyOwnAnswer(User loginUser) {
-        Long cnt = answers.stream()
-                          .filter(answer -> !answer.isOwner(loginUser))
-                          .count();
-        return cnt == 0;
     }
 }
